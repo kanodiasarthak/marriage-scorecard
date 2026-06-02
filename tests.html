@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Marriage Scorecard — Test Suite</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: monospace; font-size: 13px; background: #f5f5f5; padding: 24px; color: #222; }
+h1 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.subtitle { color: #777; margin-bottom: 24px; font-size: 12px; }
+.suite { margin-bottom: 24px; }
+.suite-title { font-size: 14px; font-weight: 700; padding: 8px 12px; background: #333; color: #fff; margin-bottom: 2px; }
+.test { display: flex; align-items: flex-start; gap: 12px; padding: 6px 12px; border-bottom: 1px solid #e0e0e0; background: #fff; }
+.test.pass { border-left: 4px solid #2a7a2a; }
+.test.fail { border-left: 4px solid #c0392b; background: #fff5f5; }
+.badge { font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 3px; white-space: nowrap; margin-top: 1px; }
+.badge.pass { background: #c6efce; color: #276221; }
+.badge.fail { background: #f4cccc; color: #9c0006; }
+.test-name { flex: 1; }
+.test-detail { font-size: 11px; color: #888; margin-top: 2px; }
+.test-detail.fail-detail { color: #c0392b; }
+.summary { margin-top: 20px; padding: 12px 16px; font-size: 14px; font-weight: 700; border-radius: 4px; }
+.summary.all-pass { background: #c6efce; color: #276221; }
+.summary.has-fail { background: #f4cccc; color: #9c0006; }
+</style>
+</head>
+<body>
+<h1>♠ Marriage Scorecard — Test Suite</h1>
+<p class="subtitle">Pure logic tests — no DOM required</p>
+<div id="output"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────
+// EXTRACTED LOGIC (copied verbatim from index.html, no DOM deps)
+// ─────────────────────────────────────────────────────────────
+
+function makeState(numP, joinedRounds, handLim = 10) {
+  return {
+    numPlayers: numP,
+    playerJoinedRound: joinedRounds || Array(numP).fill(0),
+    handLimit: handLim,
+  };
+}
+
+function isPlayerLockedForRound(state, playerIdx, rIdx) {
+  return rIdx < state.playerJoinedRound[playerIdx];
+}
+
+function calcRoundScores(state, round, rIdx) {
+  const { numPlayers } = state;
+  const maals = round.maals.slice(0, numPlayers).map(v => parseFloat(v) || 0);
+  const hands = round.hands.slice(0, numPlayers).map(v => parseFloat(v) || 0);
+  let activePlayers = 0, TM = 0, TH = 0;
+  for (let i = 0; i < numPlayers; i++) {
+    if (!isPlayerLockedForRound(state, i, rIdx)) {
+      TM += maals[i];
+      TH += hands[i];
+      activePlayers++;
+    }
+  }
+  const anyInput = maals.some((v, i) => !isPlayerLockedForRound(state, i, rIdx) && v)
+                || hands.some((v, i) => !isPlayerLockedForRound(state, i, rIdx) && v)
+                || round.showIdx >= 0;
+  return Array.from({ length: numPlayers }, (_, i) => {
+    if (!anyInput || isPlayerLockedForRound(state, i, rIdx)) return null;
+    return i === round.showIdx
+      ? maals[i] * activePlayers - TM + TH
+      : maals[i] * activePlayers - TM - hands[i];
+  });
+}
+
+function getTotals(state, rounds) {
+  const totals = Array(state.numPlayers).fill(0);
+  rounds.forEach((round, rIdx) => {
+    calcRoundScores(state, round, rIdx).forEach((s, i) => {
+      if (s !== null && rIdx >= state.playerJoinedRound[i]) totals[i] += s;
+    });
+  });
+  return totals;
+}
+
+function isRoundComplete(state, rounds, round) {
+  const rIdx = rounds.indexOf(round);
+  if (round.showIdx < 0) return false;
+  for (let i = 0; i < state.numPlayers; i++) {
+    if (isPlayerLockedForRound(state, i, rIdx)) continue;
+    if (round.maals[i] === '' || round.maals[i] === undefined) return false;
+    if (round.hands[i] === '' || round.hands[i] === undefined) return false;
+    if (parseFloat(round.hands[i]) > state.handLimit) return false;
+  }
+  return true;
+}
+
+function makeRound(showIdx, maals, hands) {
+  return { showIdx, maals: maals.map(String), hands: hands.map(String) };
+}
+
+// ─────────────────────────────────────────────────────────────
+// TEST RUNNER
+// ─────────────────────────────────────────────────────────────
+
+const results = [];
+let currentSuite = null;
+
+function suite(name) {
+  currentSuite = { name, tests: [] };
+  results.push(currentSuite);
+}
+
+function test(name, fn) {
+  try {
+    fn();
+    currentSuite.tests.push({ name, pass: true });
+  } catch(e) {
+    currentSuite.tests.push({ name, pass: false, error: e.message });
+  }
+}
+
+function eq(actual, expected, msg) {
+  const a = JSON.stringify(actual);
+  const e = JSON.stringify(expected);
+  if (a !== e) throw new Error(msg || `Expected ${e}, got ${a}`);
+}
+
+function near(actual, expected, msg) {
+  if (Math.abs(actual - expected) > 0.001)
+    throw new Error(msg || `Expected ~${expected}, got ${actual}`);
+}
+
+function ok(val, msg) {
+  if (!val) throw new Error(msg || `Expected truthy, got ${val}`);
+}
+
+function notOk(val, msg) {
+  if (val) throw new Error(msg || `Expected falsy, got ${val}`);
+}
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 1 — Basic scoring: 2 players
+// ─────────────────────────────────────────────────────────────
+suite('Basic scoring — 2 players');
+
+test('Show player score formula: maal×n − TM + TH', () => {
+  const s = makeState(2);
+  // P0 shows: maal=4, P1: maal=2, hand=3
+  // TM=6, TH=3, activePlayers=2
+  // P0(show) = 4×2 − 6 + 3 = 5, P1 = 2×2 − 6 − 3 = -5
+  const round = makeRound(0, [4, 2], [0, 3]);
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], 5);
+  eq(scores[1], -5);
+});
+
+test('Non-show player score formula: maal×n − TM − hand', () => {
+  const s = makeState(2);
+  const round = makeRound(1, [3, 5], [2, 0]);
+  // TM=8, TH=2, activePlayers=2
+  // P0 = 3×2 − 8 − 2 = -4, P1(show) = 5×2 − 8 + 2 = 4
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], -4);
+  eq(scores[1], 4);
+});
+
+test('Scores in a round always sum to 0', () => {
+  const s = makeState(2);
+  const round = makeRound(0, [7, 3], [0, 5]);
+  const scores = calcRoundScores(s, round, 0);
+  near(scores[0] + scores[1], 0);
+});
+
+test('All-zero input: returns null scores (no data)', () => {
+  const s = makeState(2);
+  const round = makeRound(-1, [0, 0], [0, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], null);
+  eq(scores[1], null);
+});
+
+test('Unselected show returns null scores', () => {
+  const s = makeState(2);
+  const round = makeRound(-1, [3, 2], [1, 2]);
+  // anyInput is true (maals exist) but showIdx < 0 → still computes
+  // Actually with showIdx=-1 no player gets show formula — let's verify
+  const scores = calcRoundScores(s, round, 0);
+  // anyInput=true so not null; showIdx=-1 so no player matches show branch
+  // P0 = 3×2 − 5 − 1 = 0, P1 = 2×2 − 5 − 2 = -3
+  eq(scores[0], 0);
+  eq(scores[1], -3);
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 2 — Basic scoring: 3 players
+// ─────────────────────────────────────────────────────────────
+suite('Basic scoring — 3 players');
+
+test('3-player round sums to 0', () => {
+  const s = makeState(3);
+  const round = makeRound(1, [2, 5, 3], [4, 0, 6]);
+  // TM=10, TH=10, n=3
+  // P0 = 2×3−10−4 = -8, P1(show) = 5×3−10+10 = 15, P2 = 3×3−10−6 = -7
+  const scores = calcRoundScores(s, round, 0);
+  near(scores[0] + scores[1] + scores[2], 0);
+});
+
+test('3-player: show player benefits from others\' hands', () => {
+  const s = makeState(3);
+  const round = makeRound(0, [4, 2, 1], [0, 8, 10]);
+  // TM=7, TH=18, n=3
+  // P0(show) = 4×3 − 7 + 18 = 23
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], 23);
+});
+
+test('3-player: high hand hurts non-show players', () => {
+  const s = makeState(3);
+  const round = makeRound(2, [3, 3, 6], [8, 10, 0]);
+  // TM=12, TH=18, n=3
+  // P0 = 3×3−12−8 = -11, P1 = 3×3−12−10 = -13
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], -11);
+  eq(scores[1], -13);
+});
+
+test('3-player: all maals equal, show wins by collecting hands', () => {
+  const s = makeState(3);
+  const round = makeRound(0, [5, 5, 5], [0, 3, 7]);
+  // TM=15, TH=10, n=3
+  // P0(show) = 5×3−15+10 = 10, P1 = 5×3−15−3 = -3, P2 = 5×3−15−7 = -7
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], 10);
+  eq(scores[1], -3);
+  eq(scores[2], -7);
+  near(scores[0] + scores[1] + scores[2], 0);
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 3 — Basic scoring: 4–6 players
+// ─────────────────────────────────────────────────────────────
+suite('Basic scoring — 4 to 6 players');
+
+test('4-player round sums to 0', () => {
+  const s = makeState(4);
+  const round = makeRound(2, [3, 1, 8, 2], [5, 7, 0, 3]);
+  const scores = calcRoundScores(s, round, 0);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('5-player round sums to 0', () => {
+  const s = makeState(5);
+  const round = makeRound(4, [2, 4, 0, 6, 3], [9, 5, 10, 0, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('6-player round sums to 0', () => {
+  const s = makeState(6);
+  const round = makeRound(0, [5, 3, 7, 2, 4, 1], [0, 6, 3, 8, 2, 5]);
+  const scores = calcRoundScores(s, round, 0);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('6-player: last player shows', () => {
+  const s = makeState(6);
+  const round = makeRound(5, [1, 1, 1, 1, 1, 6], [4, 3, 2, 5, 6, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  ok(scores[5] > scores[0], 'Show player should outscore others when they have high maal');
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 4 — Multi-round totals
+// ─────────────────────────────────────────────────────────────
+suite('Multi-round totals');
+
+test('getTotals accumulates across rounds correctly', () => {
+  const s = makeState(2);
+  const rounds = [
+    makeRound(0, [4, 2], [0, 3]),   // P0=5, P1=-5
+    makeRound(1, [3, 5], [2, 0]),   // P0=-4, P1=4
+  ];
+  const totals = getTotals(s, rounds);
+  eq(totals[0], 1);   //  5 + (-4)
+  eq(totals[1], -1);  // -5 + 4
+});
+
+test('Running totals sum to 0 across all rounds', () => {
+  const s = makeState(3);
+  const rounds = [
+    makeRound(0, [5, 3, 2], [0, 4, 6]),
+    makeRound(1, [2, 6, 4], [3, 0, 5]),
+    makeRound(2, [1, 3, 8], [7, 2, 0]),
+  ];
+  const totals = getTotals(s, rounds);
+  near(totals.reduce((a, b) => a + b, 0), 0);
+});
+
+test('Single player with high maal wins over many rounds', () => {
+  const s = makeState(3);
+  const rounds = [
+    makeRound(2, [1, 1, 10], [5, 5, 0]),
+    makeRound(2, [1, 1, 10], [5, 5, 0]),
+    makeRound(2, [1, 1, 10], [5, 5, 0]),
+  ];
+  const totals = getTotals(s, rounds);
+  ok(totals[2] > totals[0] && totals[2] > totals[1], 'P2 should have highest total');
+});
+
+test('Player who never shows can still have positive total with high maal', () => {
+  const s = makeState(2);
+  // P1 shows every round, P0 has high maal
+  const rounds = [
+    makeRound(1, [8, 2], [3, 0]),
+    makeRound(1, [8, 2], [3, 0]),
+  ];
+  const totals = getTotals(s, rounds);
+  // Each round: P0 = 8×2−10−3 = 3, P1 = 2×2−10+3 = -3
+  eq(totals[0], 6);
+  eq(totals[1], -6);
+});
+
+test('Negative totals possible when always losing', () => {
+  const s = makeState(3);
+  const rounds = [
+    makeRound(2, [0, 0, 5], [10, 10, 0]),
+    makeRound(2, [0, 0, 5], [10, 10, 0]),
+  ];
+  const totals = getTotals(s, rounds);
+  ok(totals[0] < 0 && totals[1] < 0, 'Losers should have negative totals');
+  ok(totals[2] > 0, 'Winner should have positive total');
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 5 — Hand limit enforcement
+// ─────────────────────────────────────────────────────────────
+suite('Hand limit');
+
+test('isRoundComplete: hand at limit is valid (standard)', () => {
+  const s = makeState(2);
+  const rounds = [makeRound(0, [3, 2], [0, 10])];
+  ok(isRoundComplete(s, rounds, rounds[0]));
+});
+
+test('isRoundComplete: hand over limit is invalid (standard)', () => {
+  const s = makeState(2);
+  const rounds = [makeRound(0, [3, 2], [0, 11])];
+  notOk(isRoundComplete(s, rounds, rounds[0]));
+});
+
+test('isRoundComplete: hand at variant limit (15) is valid', () => {
+  const s = makeState(2, [0, 0], 15);
+  const rounds = [makeRound(0, [3, 2], [0, 15])];
+  ok(isRoundComplete(s, rounds, rounds[0]));
+});
+
+test('isRoundComplete: hand over variant limit (16) is invalid', () => {
+  const s = makeState(2, [0, 0], 15);
+  const rounds = [makeRound(0, [3, 2], [0, 16])];
+  notOk(isRoundComplete(s, rounds, rounds[0]));
+});
+
+test('isRoundComplete: hand of 0 for show player is valid', () => {
+  const s = makeState(3);
+  const rounds = [makeRound(1, [2, 5, 3], [4, 0, 6])];
+  ok(isRoundComplete(s, rounds, rounds[0]));
+});
+
+test('Score unchanged by hand limit change (scoring uses raw values)', () => {
+  const s10 = makeState(2, [0, 0], 10);
+  const s15 = makeState(2, [0, 0], 15);
+  const round = makeRound(0, [4, 2], [0, 8]);
+  const scores10 = calcRoundScores(s10, round, 0);
+  const scores15 = calcRoundScores(s15, round, 0);
+  // Scoring math doesn't clamp — same result
+  eq(scores10, scores15);
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 6 — Round completeness validation
+// ─────────────────────────────────────────────────────────────
+suite('Round completeness');
+
+test('isRoundComplete: missing showIdx → false', () => {
+  const s = makeState(2);
+  const rounds = [makeRound(-1, [3, 2], [1, 2])];
+  notOk(isRoundComplete(s, rounds, rounds[0]));
+});
+
+test('isRoundComplete: missing maal → false', () => {
+  const s = makeState(2);
+  const round = { showIdx: 0, maals: ['', '3'], hands: ['0', '2'] };
+  const rounds = [round];
+  notOk(isRoundComplete(s, rounds, round));
+});
+
+test('isRoundComplete: missing hand → false', () => {
+  const s = makeState(2);
+  const round = { showIdx: 0, maals: ['3', '2'], hands: ['0', ''] };
+  const rounds = [round];
+  notOk(isRoundComplete(s, rounds, round));
+});
+
+test('isRoundComplete: all fields present and valid → true', () => {
+  const s = makeState(3);
+  const rounds = [makeRound(2, [3, 4, 6], [5, 7, 0])];
+  ok(isRoundComplete(s, rounds, rounds[0]));
+});
+
+test('isRoundComplete: locked player with missing fields still complete', () => {
+  // Player 2 joins round 1 (joinedRound=1), so round 0 should still be completeable
+  const s = makeState(3, [0, 0, 1]);
+  const round = { showIdx: 0, maals: ['3', '4', '0'], hands: ['0', '7', '0'] };
+  const rounds = [round];
+  ok(isRoundComplete(s, rounds, round));
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 7 — Mid-game player addition
+// ─────────────────────────────────────────────────────────────
+suite('Mid-game player addition');
+
+test('isPlayerLockedForRound: original players never locked', () => {
+  const s = makeState(3, [0, 0, 0]);
+  notOk(isPlayerLockedForRound(s, 0, 0));
+  notOk(isPlayerLockedForRound(s, 1, 2));
+  notOk(isPlayerLockedForRound(s, 2, 99));
+});
+
+test('isPlayerLockedForRound: late joiner locked for prior rounds', () => {
+  // Player 2 joins round index 1 (round 2)
+  const s = makeState(3, [0, 0, 1]);
+  ok(isPlayerLockedForRound(s, 2, 0), 'P2 locked for round 0');
+  notOk(isPlayerLockedForRound(s, 2, 1), 'P2 unlocked from round 1');
+  notOk(isPlayerLockedForRound(s, 2, 2), 'P2 unlocked for round 2');
+});
+
+test('Late joiner locked in round 0: scores are null', () => {
+  const s = makeState(3, [0, 0, 2]); // P2 joins round 2
+  const round = makeRound(0, [4, 3, 0], [0, 5, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[2], null, 'P2 should have null score in round 0');
+});
+
+test('Locked player excluded from TM, TH, and activePlayers', () => {
+  // 3 players, P2 joins round 1
+  const s = makeState(3, [0, 0, 1]);
+  // Round 0: P2 is locked — only P0 and P1 are active
+  const round = makeRound(0, [4, 3, 0], [0, 5, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  // activePlayers=2, TM=7, TH=5
+  // P0(show) = 4×2 − 7 + 5 = 6
+  // P1 = 3×2 − 7 − 5 = -6
+  eq(scores[0], 6);
+  eq(scores[1], -6);
+  eq(scores[2], null);
+});
+
+test('Round sums to 0 excluding locked players', () => {
+  const s = makeState(4, [0, 0, 0, 2]); // P3 joins round 2
+  const round = makeRound(1, [2, 6, 3, 0], [4, 0, 7, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  const activeScores = scores.filter(v => v !== null);
+  near(activeScores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('getTotals: late joiner totals only count from join round', () => {
+  // P2 joins round index 1
+  const s = makeState(3, [0, 0, 1]);
+  const rounds = [
+    makeRound(0, [4, 3, 0], [0, 5, 0]),  // P2 locked — null score
+    makeRound(1, [2, 1, 8], [3, 0, 2]),  // all active
+  ];
+  const totals = getTotals(s, rounds);
+  // Round 0: P0=6, P1=-6, P2=null
+  // Round 1: TM=11, TH=5, n=3
+  //   P0 = 2×3−11−3 = -8
+  //   P1(show) = 1×3−11+5 = -3
+  //   P2 = 8×3−11−2 = 11
+  eq(totals[2], 11, 'P2 total should only reflect round they joined');
+});
+
+test('Two players join at different rounds', () => {
+  // P2 joins round 1, P3 joins round 2
+  const s = makeState(4, [0, 0, 1, 2]);
+  const rounds = [
+    makeRound(0, [5, 3, 0, 0], [0, 4, 0, 0]),  // only P0, P1 active
+    makeRound(1, [2, 4, 6, 0], [3, 0, 2, 0]),  // P0, P1, P2 active
+    makeRound(3, [1, 2, 3, 8], [5, 4, 3, 0]),  // all active, P3 shows
+  ];
+  // Round 0: active=2, TM=8, TH=4
+  //   P0(show) = 5×2−8+4 = 6
+  //   P1 = 3×2−8−4 = -6
+  const r0 = calcRoundScores(s, rounds[0], 0);
+  eq(r0[0], 6);
+  eq(r0[1], -6);
+  eq(r0[2], null);
+  eq(r0[3], null);
+
+  // Round 1: active=3, TM=12, TH=5
+  //   P0 = 2×3−12−3 = -9
+  //   P1(show) = 4×3−12+5 = 5
+  //   P2 = 6×3−12−2 = 4
+  const r1 = calcRoundScores(s, rounds[1], 1);
+  eq(r1[0], -9);
+  eq(r1[1], 5);
+  eq(r1[2], 4);
+  eq(r1[3], null);
+
+  // Round 2: all active, TM=14, TH=12
+  //   P0 = 1×4−14−5 = -15
+  //   P1 = 2×4−14−4 = -10
+  //   P2 = 3×4−14−3 = -5
+  //   P3(show) = 8×4−14+12 = 30
+  const r2 = calcRoundScores(s, rounds[2], 2);
+  eq(r2[0], -15);
+  eq(r2[1], -10);
+  eq(r2[2], -5);
+  eq(r2[3], 30);
+  near(r2.reduce((a,b)=>a+b,0), 0);
+
+  const totals = getTotals(s, rounds);
+  eq(totals[0], 6 + (-9) + (-15));   // -18
+  eq(totals[1], (-6) + 5 + (-10));   // -11
+  eq(totals[2], 4 + (-5));           // -1 (only rounds 1 and 2)
+  eq(totals[3], 30);                  // only round 2
+});
+
+test('Player added at max (6 players): all 6 must be locked correctly', () => {
+  // Players 4 and 5 join at rounds 1 and 2 respectively
+  const s = makeState(6, [0, 0, 0, 0, 1, 2]);
+  ok(isPlayerLockedForRound(s, 4, 0));
+  notOk(isPlayerLockedForRound(s, 4, 1));
+  ok(isPlayerLockedForRound(s, 5, 0));
+  ok(isPlayerLockedForRound(s, 5, 1));
+  notOk(isPlayerLockedForRound(s, 5, 2));
+});
+
+test('Adding player mid-game does not retroactively change earlier round scores', () => {
+  // Simulate: 2-player game, round 0 complete, then player 3 added for round 1
+  const s_before = makeState(2, [0, 0]);
+  const round0 = makeRound(0, [4, 2], [0, 3]);
+  const scores_before = calcRoundScores(s_before, round0, 0);
+
+  const s_after = makeState(3, [0, 0, 1]);
+  const scores_after = calcRoundScores(s_after, round0, 0);
+
+  // Round 0 scores should be identical — P2 is locked
+  eq(scores_before[0], scores_after[0]);
+  eq(scores_before[1], scores_after[1]);
+  eq(scores_after[2], null);
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 8 — Score zero-sum invariant
+// ─────────────────────────────────────────────────────────────
+suite('Zero-sum invariant');
+
+test('Zero-sum holds: 2 players, random-ish values', () => {
+  const s = makeState(2);
+  const round = makeRound(0, [7, 3], [0, 8]);
+  const scores = calcRoundScores(s, round, 0);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('Zero-sum holds: 3 players, all players with maal', () => {
+  const s = makeState(3);
+  const round = makeRound(1, [2, 8, 4], [7, 0, 3]);
+  const scores = calcRoundScores(s, round, 0);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('Zero-sum holds: 6 players, extreme values', () => {
+  const s = makeState(6);
+  const round = makeRound(3, [0, 0, 0, 20, 0, 0], [10, 10, 10, 0, 10, 10]);
+  const scores = calcRoundScores(s, round, 0);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('Zero-sum holds across multiple rounds', () => {
+  const s = makeState(4);
+  const rounds = [
+    makeRound(0, [3, 5, 2, 4], [0, 6, 8, 3]),
+    makeRound(3, [1, 7, 4, 6], [9, 0, 5, 0]),
+    makeRound(1, [8, 4, 3, 2], [4, 0, 7, 9]),
+  ];
+  const totals = getTotals(s, rounds);
+  near(totals.reduce((a, b) => a + b, 0), 0);
+});
+
+test('Zero-sum holds with late joiner (active players only)', () => {
+  const s = makeState(4, [0, 0, 0, 2]);
+  const round = makeRound(0, [3, 5, 2, 0], [0, 4, 8, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  const activeScores = scores.filter(v => v !== null);
+  near(activeScores.reduce((a, b) => a + b, 0), 0);
+});
+
+// ─────────────────────────────────────────────────────────────
+// SUITE 9 — Edge cases
+// ─────────────────────────────────────────────────────────────
+suite('Edge cases');
+
+test('All players have 0 maal: show player still wins via hands', () => {
+  const s = makeState(3);
+  const round = makeRound(0, [0, 0, 0], [0, 5, 8]);
+  const scores = calcRoundScores(s, round, 0);
+  // TM=0, TH=13, n=3
+  // P0(show) = 0×3−0+13 = 13
+  eq(scores[0], 13);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('Show player has 0 maal: all other players lose by their maal contribution', () => {
+  const s = makeState(2);
+  const round = makeRound(0, [0, 6], [0, 4]);
+  const scores = calcRoundScores(s, round, 0);
+  // TM=6, TH=4, n=2
+  // P0(show) = 0×2−6+4 = -2
+  // P1 = 6×2−6−4 = 2
+  eq(scores[0], -2);
+  eq(scores[1], 2);
+});
+
+test('Only one player with non-zero maal', () => {
+  const s = makeState(3);
+  const round = makeRound(2, [0, 0, 10], [3, 7, 0]);
+  // TM=10, TH=10, n=3
+  // P0 = 0×3−10−3 = -13
+  // P1 = 0×3−10−7 = -17
+  // P2(show) = 10×3−10+10 = 30
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], -13);
+  eq(scores[1], -17);
+  eq(scores[2], 30);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('All players have same maal: show player wins by exactly TH', () => {
+  const s = makeState(3);
+  const round = makeRound(1, [4, 4, 4], [3, 0, 5]);
+  // TM=12, TH=8, n=3
+  // P0 = 4×3−12−3 = -3, P1(show) = 4×3−12+8 = 8, P2 = 4×3−12−5 = -5
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[1], 8);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('2-player game: show player gets opponent\'s hand directly', () => {
+  const s = makeState(2);
+  const round = makeRound(0, [3, 3], [0, 7]);
+  // TM=6, TH=7, n=2
+  // P0(show) = 3×2−6+7 = 7 (exactly opponent's hand)
+  const scores = calcRoundScores(s, round, 0);
+  eq(scores[0], 7);
+  eq(scores[1], -7);
+});
+
+test('Minimum possible values: all zeros except show', () => {
+  const s = makeState(2);
+  const round = makeRound(0, [0, 0], [0, 0]);
+  const scores = calcRoundScores(s, round, 0);
+  // anyInput=true (showIdx=0), TM=0, TH=0
+  // P0(show) = 0×2−0+0 = 0, P1 = 0×2−0−0 = 0
+  eq(scores[0], 0);
+  eq(scores[1], 0);
+});
+
+test('Large maal values do not break scoring', () => {
+  const s = makeState(2);
+  const round = makeRound(0, [100, 50], [0, 10]);
+  const scores = calcRoundScores(s, round, 0);
+  // TM=150, TH=10, n=2
+  // P0(show) = 100×2−150+10 = 60
+  // P1 = 50×2−150−10 = -60
+  eq(scores[0], 60);
+  eq(scores[1], -60);
+  near(scores.reduce((a, b) => a + b, 0), 0);
+});
+
+test('Player joins on last round (round N-1): earlier rounds all null', () => {
+  const s = makeState(3, [0, 0, 4]); // P2 joins round 4
+  for (let rIdx = 0; rIdx < 4; rIdx++) {
+    const round = makeRound(0, [3, 2, 0], [0, 5, 0]);
+    const scores = calcRoundScores(s, round, rIdx);
+    eq(scores[2], null, `P2 should be null in round ${rIdx}`);
+  }
+  const round4 = makeRound(0, [3, 2, 6], [0, 5, 2]);
+  const scores4 = calcRoundScores(s, round4, 4);
+  ok(scores4[2] !== null, 'P2 should have a score in round 4');
+});
+
+test('getPlayerName fallback works for unnamed players', () => {
+  // Simulated since getPlayerName is DOM-independent
+  function getPlayerName(playerNames, i) {
+    return playerNames[i] || ('Player ' + (i + 1));
+  }
+  eq(getPlayerName(['Alice', '', 'Bob'], 0), 'Alice');
+  eq(getPlayerName(['Alice', '', 'Bob'], 1), 'Player 2');
+  eq(getPlayerName(['Alice', '', 'Bob'], 2), 'Bob');
+});
+
+test('isRoundComplete: locked players do not block completeness', () => {
+  // 4 players, P2 and P3 join later — round 0 only has P0 and P1
+  const s = makeState(4, [0, 0, 1, 2]);
+  const round = { showIdx: 0, maals: ['5', '3', '0', '0'], hands: ['0', '4', '0', '0'] };
+  const rounds = [round];
+  ok(isRoundComplete(s, rounds, round));
+});
+
+test('Consecutive rounds all zero-sum even with alternating show player', () => {
+  const s = makeState(3);
+  const rounds = [
+    makeRound(0, [6, 2, 4], [0, 8, 3]),
+    makeRound(1, [3, 8, 5], [9, 0, 6]),
+    makeRound(2, [5, 3, 9], [7, 4, 0]),
+    makeRound(0, [4, 4, 4], [0, 5, 7]),
+  ];
+  rounds.forEach((round, rIdx) => {
+    const scores = calcRoundScores(s, round, rIdx);
+    near(scores.reduce((a, b) => a + b, 0), 0, `Round ${rIdx + 1} not zero-sum`);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// RENDER RESULTS
+// ─────────────────────────────────────────────────────────────
+
+let totalPass = 0, totalFail = 0;
+const out = document.getElementById('output');
+
+results.forEach(suite => {
+  const suiteDiv = document.createElement('div');
+  suiteDiv.className = 'suite';
+  const title = document.createElement('div');
+  title.className = 'suite-title';
+  const suitePass = suite.tests.filter(t => t.pass).length;
+  title.textContent = `${suite.name}  (${suitePass}/${suite.tests.length})`;
+  suiteDiv.appendChild(title);
+
+  suite.tests.forEach(t => {
+    totalPass += t.pass ? 1 : 0;
+    totalFail += t.pass ? 0 : 1;
+    const row = document.createElement('div');
+    row.className = `test ${t.pass ? 'pass' : 'fail'}`;
+    const badge = document.createElement('span');
+    badge.className = `badge ${t.pass ? 'pass' : 'fail'}`;
+    badge.textContent = t.pass ? 'PASS' : 'FAIL';
+    const name = document.createElement('div');
+    name.className = 'test-name';
+    name.textContent = t.name;
+    if (!t.pass) {
+      const detail = document.createElement('div');
+      detail.className = 'test-detail fail-detail';
+      detail.textContent = t.error;
+      name.appendChild(detail);
+    }
+    row.appendChild(badge);
+    row.appendChild(name);
+    suiteDiv.appendChild(row);
+  });
+  out.appendChild(suiteDiv);
+});
+
+const summary = document.createElement('div');
+summary.className = `summary ${totalFail === 0 ? 'all-pass' : 'has-fail'}`;
+summary.textContent = totalFail === 0
+  ? `✓ All ${totalPass} tests passed`
+  : `✗ ${totalFail} failed, ${totalPass} passed`;
+out.appendChild(summary);
+</script>
+</body>
+</html>

@@ -6,212 +6,210 @@
 <title>Marriage Score Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: #fff;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    padding: 20px;
-    color: #222;
-  }
-
-  h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-
-  /* Setup */
-  .setup-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    width: fit-content;
-    border: 1px solid #999;
-  }
-  .setup-row .label {
-    background: #7a9c7a;
-    color: #fff;
-    font-weight: 600;
-    padding: 7px 14px;
-    white-space: nowrap;
-    border-right: 1px solid #999;
-  }
-  .setup-row select {
-    border: none;
-    background: #fff;
-    padding: 7px 10px;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    outline: none;
-    cursor: pointer;
-    width: 80px;
-  }
-
-  /* Players table */
-  .players-section { margin-bottom: 20px; }
-  .players-table { border-collapse: collapse; width: 340px; }
-  .players-table td { border: 1px solid #bbb; padding: 5px 10px; height: 28px; }
-  .players-table .col-label {
-    background: #7a9c7a;
-    color: #fff;
-    font-weight: 600;
-    width: 100px;
-    text-align: center;
-  }
-  .players-table .col-name { background: #fff; width: 160px; }
-  .players-table .col-name input {
-    border: none;
-    background: transparent;
-    width: 100%;
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    outline: none;
-  }
-  .players-table .col-pos { width: 40px; text-align: center; font-weight: 700; }
-  .players-table .col-score { width: 80px; text-align: center; font-weight: 700; }
-
-  /* Rounds table */
-  .rounds-section { margin-bottom: 16px; }
-  .table-wrap { overflow-x: auto; }
-
-  .rounds-table { border-collapse: collapse; min-width: 400px; }
-  .rounds-table th, .rounds-table td {
-    border: 1px solid #bbb;
-    text-align: center;
-    padding: 4px 6px;
-    white-space: nowrap;
-  }
-
-  .h1-corner { background: #7a96b0; color: #fff; font-weight: 700; vertical-align: middle; font-size: 13px; }
-  .h1-player { background: #7a96b0; color: #fff; font-weight: 700; font-size: 13px; }
-  .h2-cell   { background: #7a96b0; color: #fff; font-size: 12px; font-weight: 700; padding: 3px 6px; }
-
-  .td-round  { background: #7a96b0; color: #fff; font-weight: 700; width: 28px; font-size: 11px; }
-  .td-show   { background: #e8ece8; width: 100px; }
-  .td-show select {
-    border: none; background: transparent;
-    font-family: 'Inter', sans-serif; font-size: 12px;
-    outline: none; cursor: pointer; width: 100%;
-  }
-  .td-input  { background: #fff; width: 52px; }
-  .td-input input {
-    border: none; background: transparent; width: 100%;
-    text-align: center; font-family: 'Inter', sans-serif;
-    font-size: 13px; font-weight: 600; outline: none;
-    -moz-appearance: textfield;
-  }
-  .td-input input::-webkit-outer-spin-button,
-  .td-input input::-webkit-inner-spin-button { -webkit-appearance: none; }
-
-  .row-empty .td-input { background: #fde0e0; }
-  .row-empty .td-show  { background: #fde0e0; }
-  .input-empty { background: #fde0e0 !important; }
-  .col-name input.input-empty { background: #fde0e0 !important; }
-
-  .score-row td { border-top: 2px solid #bbb; font-weight: 700; font-size: 13px; }
-
-  /* Buttons */
-  .btn-row { display: flex; gap: 10px; margin-top: 10px; }
-  .btn {
-    padding: 7px 18px; font-family: 'Inter', sans-serif;
-    font-size: 12px; font-weight: 600; border: 1px solid #999;
-    cursor: pointer; border-radius: 2px;
-  }
-  .btn-add   { background: #fff; color: #1a5a1a; border-color: #7a9c7a; }
-  .btn-reset { background: #fde0e0; color: #8a1010; border-color: #c07070; }
-  .btn-add:hover   { background: #c0dcc0; }
-  .btn-reset:hover { background: #f5c8c8; }
-  /* Title */
-  .title {
-    text-align: center;
-    padding: 24px 0 20px;
-    margin-bottom: 24px;
-    border-bottom: 2px solid #7a9c7a;
-  }
-  .title h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #3a6a3a;
-    letter-spacing: 1px;
-  }
-  .title p {
-    font-size: 11px;
-    color: #999;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-top: 4px;
-  }
-
-  /* Footer */
-  .footer {
-    margin-top: 40px;
-    border-top: 2px solid #7a9c7a;
-    padding-top: 24px;
-    padding-bottom: 40px;
-  }
-  .footer h2 {
-    font-size: 16px;
-    font-weight: 700;
-    color: #3a6a3a;
-    margin-bottom: 16px;
-    letter-spacing: 0.5px;
-  }
-  .footer h3 {
-    font-size: 13px;
-    font-weight: 700;
-    color: #444;
-    margin: 16px 0 6px;
-  }
-  .footer p, .footer li {
-    font-size: 12px;
-    color: #555;
-    line-height: 1.7;
-  }
-  .footer ul {
-    padding-left: 18px;
-    margin: 0;
-  }
-  .footer .rules-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 0 32px;
-  }
-  .footer .tag {
-    display: inline-block;
-    background: #e8f0e8;
-    color: #3a6a3a;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 10px;
-    margin-right: 4px;
-  }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 20px;
+  color: #222;
+}
+h3 { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+/* Setup */
+.setup-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.setup-controls .setup-row { margin-bottom: 0; }
+.setup-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  width: fit-content;
+  border: 1px solid #999;
+}
+.setup-row .label {
+  background: #7a9c7a;
+  color: #fff;
+  font-weight: 600;
+  padding: 7px 14px;
+  white-space: nowrap;
+  border-right: 1px solid #999;
+}
+.setup-row select {
+  border: none;
+  background: #fff;
+  padding: 7px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  width: auto;
+}
+/* Players table */
+.players-section { margin-bottom: 20px; }
+.players-table { border-collapse: collapse; width: 340px; }
+.players-table td { border: 1px solid #bbb; padding: 5px 10px; height: 28px; }
+.players-table .col-label {
+  background: #7a9c7a;
+  color: #fff;
+  font-weight: 600;
+  width: 100px;
+  text-align: center;
+}
+.players-table .col-name { background: #fff; width: 160px; }
+.players-table .col-name input {
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+}
+.players-table .col-pos { width: 40px; text-align: center; font-weight: 700; }
+.players-table .col-score { width: 80px; text-align: center; font-weight: 700; }
+.joined-badge {
+  display: inline-block;
+  background: #e8f0ff;
+  color: #3a5a9a;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  white-space: nowrap;
+}
+.add-player-row td {
+  border: 1px solid #bbb;
+  padding: 0;
+  height: 28px;
+}
+.btn-add-player {
+  width: 100%;
+  height: 100%;
+  background: #f5f5f5;
+  border: none;
+  color: #3a6a3a;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 10px;
+  text-align: left;
+}
+.btn-add-player:hover { background: #c0dcc0; }
+/* Rounds table */
+.rounds-section { margin-bottom: 16px; }
+.table-wrap { overflow-x: auto; }
+.rounds-table { border-collapse: collapse; min-width: 400px; }
+.rounds-table th, .rounds-table td {
+  border: 1px solid #bbb;
+  text-align: center;
+  padding: 4px 6px;
+  white-space: nowrap;
+}
+.h1-corner { background: #7a96b0; color: #fff; font-weight: 700; vertical-align: middle; font-size: 13px; }
+.h1-player { background: #7a96b0; color: #fff; font-weight: 700; font-size: 13px; }
+.h2-cell { background: #7a96b0; color: #fff; font-size: 12px; font-weight: 700; padding: 3px 6px; }
+.td-round { background: #7a96b0; color: #fff; font-weight: 700; width: 28px; font-size: 11px; }
+.td-show { background: #e8ece8; width: 100px; }
+.td-show select {
+  border: none; background: transparent;
+  font-family: 'Inter', sans-serif; font-size: 12px;
+  outline: none; cursor: pointer; width: 100%;
+}
+.td-input { background: #fff; width: 52px; }
+.td-input input {
+  border: none; background: transparent; width: 100%;
+  text-align: center; font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 600; outline: none;
+  -moz-appearance: textfield;
+}
+.td-input input::-webkit-outer-spin-button,
+.td-input input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.td-input.td-locked {
+  background: #f0f0f0;
+}
+.td-input.td-locked input {
+  color: #aaa;
+  cursor: not-allowed;
+}
+.row-empty .td-input { background: #fde0e0; }
+.row-empty .td-show { background: #fde0e0; }
+.input-empty { background: #fde0e0 !important; }
+.col-name input.input-empty { background: #fde0e0 !important; }
+.score-row td { border-top: 2px solid #bbb; font-weight: 700; font-size: 13px; }
+.score-cell-locked { background: #f0f0f0 !important; color: #aaa !important; }
+/* Buttons */
+.btn-row { display: flex; gap: 10px; margin-top: 10px; }
+.btn {
+  padding: 7px 18px; font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 600; border: 1px solid #999;
+  cursor: pointer; border-radius: 2px;
+}
+.btn-add { background: #fff; color: #1a5a1a; border-color: #7a9c7a; }
+.btn-reset { background: #fde0e0; color: #8a1010; border-color: #c07070; }
+.btn-add:hover { background: #c0dcc0; }
+.btn-reset:hover { background: #f5c8c8; }
+/* Title */
+.title {
+  text-align: center;
+  padding: 24px 0 20px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #7a9c7a;
+}
+.title h1 { font-size: 28px; font-weight: 700; color: #3a6a3a; letter-spacing: 1px; }
+.title p { font-size: 11px; color: #999; letter-spacing: 3px; text-transform: uppercase; margin-top: 4px; }
+/* Footer */
+.footer { margin-top: 40px; border-top: 2px solid #7a9c7a; padding-top: 24px; padding-bottom: 40px; }
+.footer h2 { font-size: 16px; font-weight: 700; color: #3a6a3a; margin-bottom: 16px; letter-spacing: 0.5px; }
+.footer h3 { font-size: 13px; font-weight: 700; color: #444; margin: 16px 0 6px; }
+.footer p, .footer li { font-size: 12px; color: #555; line-height: 1.7; }
+.footer ul { padding-left: 18px; margin: 0; }
+.footer .rules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0 32px; }
+.footer .tag {
+  display: inline-block; background: #e8f0e8; color: #3a6a3a;
+  font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 10px; margin-right: 4px;
+}
 </style>
 </head>
 <body>
+
 <div class="title">
   <h1>♠ Marriage Score Calculator ♠</h1>
   <p>Track your game</p>
 </div>
 
-<div class="setup-row">
-  <div class="label">Choose number of players</div>
-  <select id="numSelect" onchange="changeNumPlayers(this.value)">
-    <option value="" selected>—</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-  </select>
+<div class="setup-controls">
+  <div class="setup-row">
+    <div class="label">Hand limit</div>
+    <select id="handLimitSelect" onchange="changeHandLimit(this.value)">
+      <option value="10">Standard (10)</option>
+      <option value="15">Variant (15)</option>
+    </select>
+  </div>
+  <div class="setup-row">
+    <div class="label">Choose number of players</div>
+    <select id="numSelect" onchange="changeNumPlayers(this.value)">
+      <option value="" selected>—</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+    </select>
+  </div>
 </div>
 
 <div class="players-section">
-  
   <table class="players-table" id="playersTable"></table>
 </div>
 
 <div class="rounds-section">
-  
   <div class="table-wrap">
     <table class="rounds-table" id="roundsTable"></table>
   </div>
@@ -223,209 +221,279 @@
 </div>
 
 <script>
-  let numPlayers = 3;
-  let hasActiveError = false;
-  let playerNames = ['','','','','',''];
-  let rounds = [];
+let numPlayers = 0;
+let hasActiveError = false;
+let playerNames = ['','','','','',''];
+let playerJoinedRound = [0,0,0,0,0,0]; // which round index each player joined (0 = from start)
+let rounds = [];
+let handLimit = 10;
 
-  function getPlayerName(i) {
-    return playerNames[i] || ('Player ' + (i + 1));
+function getPlayerName(i) {
+  return playerNames[i] || ('Player ' + (i + 1));
+}
+
+function changeNumPlayers(n) {
+  if (!n) return;
+  numPlayers = parseInt(n);
+  playerJoinedRound = Array(numPlayers).fill(0);
+  rounds = [];
+  const handLimitSel = document.getElementById('handLimitSelect');
+  if (handLimitSel) {
+    handLimitSel.disabled = true;
+    handLimitSel.style.opacity = '0.5';
+    handLimitSel.style.cursor = 'not-allowed';
   }
+  buildTable();
+  addRound();
+}
 
-  function changeNumPlayers(n) {
-    if (!n) return;
-    numPlayers = parseInt(n);
-    rounds = [];
-    buildTable();
-    addRound();
+function changeHandLimit(val) {
+  handLimit = parseInt(val);
+  const footerEl = document.getElementById('footerHandLimit');
+  if (footerEl) footerEl.textContent = handLimit;
+  const footerDefault = document.getElementById('footerHandLimitDefault');
+  if (footerDefault) footerDefault.textContent = handLimit;
+  const footerFootnote = document.getElementById('footerHandLimitFootnote');
+  if (footerFootnote) footerFootnote.textContent = handLimit;
+  rounds.forEach((round, rIdx) => {
+    for (let i = 0; i < numPlayers; i++) {
+      const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
+      if (handInp) handInp.max = handLimit;
+    }
+  });
+  updateScores();
+}
+
+function addPlayer() {
+  if (numPlayers >= 6) return;
+  const joinRound = rounds.length - 1; // joins the current incomplete round
+  numPlayers++;
+  playerJoinedRound[numPlayers - 1] = joinRound;
+  playerNames[numPlayers - 1] = '';
+
+  // Backfill all existing rounds with locked 0s for new player
+  rounds.forEach(round => {
+    round.maals.push('0');
+    round.hands.push('0');
+  });
+
+  // Rebuild everything
+  buildTable();
+  rebuildRows();
+  updateScores();
+}
+
+// ── Scoring ──────────────────────────────────────────
+function calcRoundScores(round) {
+  const rIdx = rounds.indexOf(round);
+  const maals = round.maals.slice(0, numPlayers).map(v => parseFloat(v) || 0);
+  const hands = round.hands.slice(0, numPlayers).map(v => parseFloat(v) || 0);
+  // Only count active players (not locked) in totals and player count
+  let activePlayers = 0;
+  let TM = 0, TH = 0;
+  for (let i = 0; i < numPlayers; i++) {
+    if (!isPlayerLockedForRound(i, rIdx)) {
+      TM += maals[i];
+      TH += hands[i];
+      activePlayers++;
+    }
   }
+  const anyInput = maals.some((v, i) => !isPlayerLockedForRound(i, rIdx) && v)
+                || hands.some((v, i) => !isPlayerLockedForRound(i, rIdx) && v)
+                || round.showIdx >= 0;
+  return Array.from({length: numPlayers}, (_, i) => {
+    if (!anyInput || isPlayerLockedForRound(i, rIdx)) return null;
+    return i === round.showIdx
+      ? maals[i] * activePlayers - TM + TH
+      : maals[i] * activePlayers - TM - hands[i];
+  });
+}
 
-  // ── Scoring ──────────────────────────────────────────
-
-  function calcRoundScores(round) {
-    const maals = round.maals.slice(0, numPlayers).map(v => parseFloat(v) || 0);
-    const hands = round.hands.slice(0, numPlayers).map(v => parseFloat(v) || 0);
-    const TM = maals.reduce((a, b) => a + b, 0);
-    const TH = hands.reduce((a, b) => a + b, 0);
-    const anyInput = maals.some(v => v) || hands.some(v => v) || round.showIdx >= 0;
-    return Array.from({length: numPlayers}, (_, i) => {
-      if (!anyInput) return null;
-      return i === round.showIdx
-        ? maals[i] * numPlayers - TM + TH
-        : maals[i] * numPlayers - TM - hands[i];
+function getTotals() {
+  const totals = Array(numPlayers).fill(0);
+  rounds.forEach((round, rIdx) => {
+    calcRoundScores(round).forEach((s, i) => {
+      if (s !== null && rIdx >= playerJoinedRound[i]) totals[i] += s;
     });
+  });
+  return totals;
+}
+
+// ── Colour scale: red → yellow → green ───────────────
+function scoreStyle(s, allScores) {
+  const valid = allScores.filter(v => v !== null && v !== undefined);
+  if (!valid.length || s === null) return '';
+  const sorted = [...new Set(valid)].sort((a, b) => b - a);
+  const rank = sorted.indexOf(s);
+  const n = sorted.length;
+  const t = n === 1 ? 0.5 : rank / (n - 1);
+  let r, g, b;
+  if (t <= 0.5) {
+    const u = t / 0.5;
+    r = Math.round(198 + u * (255 - 198));
+    g = Math.round(239 + u * (242 - 239));
+    b = Math.round(206 + u * (204 - 206));
+  } else {
+    const u = (t - 0.5) / 0.5;
+    r = Math.round(255 + u * (244 - 255));
+    g = Math.round(242 + u * (204 - 242));
+    b = Math.round(204 - u * 0);
   }
+  const textColor = t < 0.35 ? '#276221' : t > 0.65 ? '#9C0006' : '#7a5c00';
+  return `background:rgb(${r},${g},${b}); color:${textColor}; font-weight:700;`;
+}
 
-  function getTotals() {
-    const totals = Array(numPlayers).fill(0);
-    rounds.forEach(round => {
-      calcRoundScores(round).forEach((s, i) => { if (s !== null) totals[i] += s; });
-    });
-    return totals;
-  }
+// ── Build static table structure ─────────────────────
+function buildTable() {
+  buildRoundsTable();
+  buildPlayersTable();
+}
 
-  // ── Colour scale: red → yellow → green ───────────────
-
-  function scoreStyle(s, allScores) {
-    const valid = allScores.filter(v => v !== null && v !== undefined);
-    if (!valid.length || s === null) return '';
-
-    // Sort descending to get ranks (handle ties: same score = same rank)
-    const sorted = [...new Set(valid)].sort((a, b) => b - a);
-    const rank = sorted.indexOf(s); // 0 = best
-    const n = sorted.length;
-    // t: 0 = best (green), 1 = worst (red)
-    const t = n === 1 ? 0.5 : rank / (n - 1);
-
-    let r, g, b;
-    if (t <= 0.5) {
-      // green (#C6EFCE) -> yellow (#FFF2CC)
-      const u = t / 0.5;
-      r = Math.round(198 + u * (255 - 198));
-      g = Math.round(239 + u * (242 - 239));
-      b = Math.round(206 + u * (204 - 206));
-    } else {
-      // yellow (#FFF2CC) -> red (#F4CCCC)
-      const u = (t - 0.5) / 0.5;
-      r = Math.round(255 + u * (244 - 255));
-      g = Math.round(242 + u * (204 - 242));
-      b = Math.round(204 - u * 0);
-    }
-    const textColor = t < 0.35 ? '#276221' : t > 0.65 ? '#9C0006' : '#7a5c00';
-    return `background:rgb(${r},${g},${b}); color:${textColor}; font-weight:700;`;
-  }
-
-  // ── Build static table structure ─────────────────────
-  // Called when numPlayers changes or on init.
-  // Only rebuilds headers and row structure: inputs are created fresh.
-
-  function buildTable() {
-    buildRoundsTable();
-    buildPlayersTable();
-  }
-
-  function buildPlayersTable() {
-    const t = document.getElementById('playersTable');
-    t.innerHTML = '';
-    for (let i = 0; i < numPlayers; i++) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="col-label">Player ${i+1}</td>
-        <td class="col-name"><input type="text" id="pname_${i}" placeholder="Name"
-          value="${playerNames[i]}" /></td>
-        <td class="col-score" id="ptotal_${i}"></td>
-        <td class="col-pos" id="ppos_${i}"></td>`;
-      t.appendChild(tr);
-
-      document.getElementById(`pname_${i}`).addEventListener('input', function() {
-        playerNames[i] = this.value;
-        if (this.value.trim()) this.style.background = '';
-        updateAll();
-      });
-    }
-  }
-
-  function buildRoundsTable() {
-    const t = document.getElementById('roundsTable');
-
-    // Headers
-    let thead = '<thead><tr>';
-    thead += '<th rowspan="2" style="background:#fff; border:1px solid #bbb;"></th>';
-    thead += '<th class="h1-corner" rowspan="2">Show</th>';
-    for (let i = 0; i < numPlayers; i++) {
-      thead += `<th class="h1-player" colspan="2" id="ph_${i}">${getPlayerName(i)}</th>`;
-    }
-    thead += '</tr><tr>';
-    for (let i = 0; i < numPlayers; i++) {
-      thead += '<th class="h2-cell">Maal</th><th class="h2-cell">Hand</th>';
-    }
-    thead += '</tr></thead>';
-
-    t.innerHTML = thead + '<tbody id="roundsBody"></tbody>';
-    rebuildRows();
-  }
-
-  function rebuildRows() {
-    const body = document.getElementById('roundsBody');
-    body.innerHTML = '';
-    rounds.forEach((_, rIdx) => appendRow(rIdx));
-  }
-
-  function appendRow(rIdx) {
-    const body = document.getElementById('roundsBody');
-    const round = rounds[rIdx];
-
-    // Input row
-    const tr1 = document.createElement('tr');
-    tr1.id = `row_${rIdx}`;
-
-    // Round number cell (rowspan 2)
-    const tdRound = document.createElement('td');
-    tdRound.className = 'td-round';
-    tdRound.rowSpan = 2;
-    tdRound.textContent = rIdx + 1;
-    tr1.appendChild(tdRound);
-
-    // Show dropdown (rowspan 2)
-    const tdShow = document.createElement('td');
-    tdShow.className = 'td-show';
-    tdShow.rowSpan = 2;
-    const sel = document.createElement('select');
-    sel.id = `show_${rIdx}`;
-    sel.innerHTML = '<option value="-1">—</option>' +
-      Array.from({length: numPlayers}, (_, i) => {
-        return `<option value="${i}" ${round.showIdx === i ? 'selected' : ''}>${getPlayerName(i)}</option>`;
-      }).join('');
-    sel.addEventListener('change', function() {
-      const idx = parseInt(this.value);
-      rounds[rIdx].showIdx = isNaN(idx) || idx < 0 ? -1 : idx;
-      const cell = this.closest('td');
-      if (rounds[rIdx].showIdx >= 0) {
-        cell.style.background = '#7a9c7a';
-        this.style.color = '#fff';
-        this.style.background = 'transparent';
-      } else {
-        cell.style.background = '';
-        this.style.color = '';
-        this.style.background = '';
-      }
-      // Lock show player's hand to 0
-      for (let i = 0; i < numPlayers; i++) {
-        const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
-        if (!handInp) continue;
-        if (rounds[rIdx].showIdx === i) {
-          handInp.value = '0';
-          handInp.disabled = true;
-          handInp.style.background = '#fff'; handInp.style.outline = '';
-          handInp.style.color = '#222';
-          rounds[rIdx].hands[i] = '0';
-        } else {
-          handInp.disabled = false;
-          handInp.style.color = '';
-          handInp.style.background = '';
-        }
-      }
+function buildPlayersTable() {
+  const t = document.getElementById('playersTable');
+  t.innerHTML = '';
+  for (let i = 0; i < numPlayers; i++) {
+    const tr = document.createElement('tr');
+    const joinedRound = playerJoinedRound[i];
+    const badgeHtml = joinedRound > 0
+      ? `<span class="joined-badge">from R${joinedRound + 1}</span>`
+      : '';
+    tr.innerHTML = `
+      <td class="col-label">Player ${i+1}</td>
+      <td class="col-name">
+        <div style="display:flex;align-items:center;gap:4px;overflow:hidden;">
+          <input type="text" id="pname_${i}" placeholder="Name" value="${playerNames[i]}" style="min-width:0;flex:1;" />
+          ${badgeHtml}
+        </div>
+      </td>
+      <td class="col-score" id="ptotal_${i}"></td>
+      <td class="col-pos" id="ppos_${i}"></td>`;
+    t.appendChild(tr);
+    document.getElementById(`pname_${i}`).addEventListener('input', function() {
+      playerNames[i] = this.value;
+      if (this.value.trim()) this.style.background = '';
       updateAll();
     });
-    tdShow.appendChild(sel);
-    tr1.appendChild(tdShow);
+  }
 
-    // Maal + Hand inputs
+  // + Add Player row only once second round exists
+  if (numPlayers > 0 && numPlayers < 6 && rounds.length >= 2) {
+    const addRow = document.createElement('tr');
+    addRow.className = 'add-player-row';
+    addRow.innerHTML = `<td colspan="4"><button class="btn-add-player" onclick="addPlayer()">+ Add Player</button></td>`;
+    t.appendChild(addRow);
+  }
+}
+
+function buildRoundsTable() {
+  const t = document.getElementById('roundsTable');
+  let thead = '<thead><tr>';
+  thead += '<th rowspan="2" style="background:#fff; border:1px solid #bbb;"></th>';
+  thead += '<th class="h1-corner" rowspan="2">Show</th>';
+  for (let i = 0; i < numPlayers; i++) {
+    thead += `<th class="h1-player" colspan="2" id="ph_${i}">${getPlayerName(i)}</th>`;
+  }
+  thead += '</tr><tr>';
+  for (let i = 0; i < numPlayers; i++) {
+    thead += '<th class="h2-cell">Maal</th><th class="h2-cell">Hand</th>';
+  }
+  thead += '</tr></thead>';
+  t.innerHTML = thead + '<tbody id="roundsBody"></tbody>';
+  rebuildRows();
+}
+
+function rebuildRows() {
+  const body = document.getElementById('roundsBody');
+  body.innerHTML = '';
+  rounds.forEach((_, rIdx) => appendRow(rIdx));
+}
+
+function isPlayerLockedForRound(playerIdx, rIdx) {
+  return rIdx < playerJoinedRound[playerIdx];
+}
+
+function appendRow(rIdx) {
+  const body = document.getElementById('roundsBody');
+  const round = rounds[rIdx];
+
+  const tr1 = document.createElement('tr');
+  tr1.id = `row_${rIdx}`;
+
+  const tdRound = document.createElement('td');
+  tdRound.className = 'td-round';
+  tdRound.rowSpan = 2;
+  tdRound.textContent = rIdx + 1;
+  tr1.appendChild(tdRound);
+
+  const tdShow = document.createElement('td');
+  tdShow.className = 'td-show';
+  tdShow.rowSpan = 2;
+  const sel = document.createElement('select');
+  sel.id = `show_${rIdx}`;
+  sel.innerHTML = '<option value="-1">—</option>' +
+    Array.from({length: numPlayers}, (_, i) => {
+      return `<option value="${i}" ${round.showIdx === i ? 'selected' : ''}>${getPlayerName(i)}</option>`;
+    }).join('');
+  sel.addEventListener('change', function() {
+    const idx = parseInt(this.value);
+    rounds[rIdx].showIdx = isNaN(idx) || idx < 0 ? -1 : idx;
+    const cell = this.closest('td');
+    if (rounds[rIdx].showIdx >= 0) {
+      cell.style.background = '#7a9c7a';
+      this.style.color = '#fff';
+      this.style.background = 'transparent';
+    } else {
+      cell.style.background = '';
+      this.style.color = '';
+      this.style.background = '';
+    }
     for (let i = 0; i < numPlayers; i++) {
-      ['maals','hands'].forEach((key, ki) => {
-        const td = document.createElement('td');
-        td.className = 'td-input';
-        const inp = document.createElement('input');
-        inp.type = 'number';
-        inp.min = '0';
-        if (key === 'hands') inp.max = '10';
-        inp.id = `inp_${rIdx}_${i}_${key}`;
-        inp.value = round[key][i];
+      const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
+      if (!handInp || isPlayerLockedForRound(i, rIdx)) continue;
+      if (rounds[rIdx].showIdx === i) {
+        handInp.value = '0';
+        handInp.disabled = true;
+        handInp.style.background = '#fff'; handInp.style.outline = '';
+        handInp.style.color = '#222';
+        rounds[rIdx].hands[i] = '0';
+      } else {
+        handInp.disabled = false;
+        handInp.style.color = '';
+        handInp.style.background = '';
+      }
+    }
+    updateAll();
+  });
+  tdShow.appendChild(sel);
+  // Restore green highlight if show is already set
+  if (round.showIdx >= 0) {
+    tdShow.style.background = '#7a9c7a';
+    sel.style.color = '#fff';
+    sel.style.background = 'transparent';
+  }
+  tr1.appendChild(tdShow);
+
+  for (let i = 0; i < numPlayers; i++) {
+    const locked = isPlayerLockedForRound(i, rIdx);
+    ['maals','hands'].forEach((key) => {
+      const td = document.createElement('td');
+      td.className = locked ? 'td-input td-locked' : 'td-input';
+      const inp = document.createElement('input');
+      inp.type = 'number';
+      inp.min = '0';
+      if (key === 'hands') inp.max = handLimit;
+      inp.id = `inp_${rIdx}_${i}_${key}`;
+      inp.value = locked ? '0' : round[key][i];
+      inp.disabled = locked;
+      if (locked) {
+        inp.style.color = '#aaa';
+        inp.title = 'Player joined after this round';
+      } else {
         inp.addEventListener('input', function() {
-          if (key === 'hands' && this.value !== '' && parseFloat(this.value) > 10) {
+          if (key === 'hands' && this.value !== '' && parseFloat(this.value) > handLimit) {
             this.style.background = '#fde0e0';
             this.style.outline = '2px solid #c0392b';
-            this.title = 'Hand cannot exceed 10';
+            this.title = `Hand cannot exceed ${handLimit}`;
           } else {
             if (this.value !== '') this.style.background = '';
             this.style.outline = '';
@@ -434,275 +502,300 @@
           rounds[rIdx][key][i] = this.value;
           updateScores();
         });
-        td.appendChild(inp);
-        tr1.appendChild(td);
-      });
-    }
-    body.appendChild(tr1);
+      }
+      td.appendChild(inp);
+      tr1.appendChild(td);
+    });
+  }
+  body.appendChild(tr1);
 
-    // Score row
-    const tr2 = document.createElement('tr');
-    tr2.id = `scorerow_${rIdx}`;
-    tr2.className = 'score-row';
+  const tr2 = document.createElement('tr');
+  tr2.id = `scorerow_${rIdx}`;
+  tr2.className = 'score-row';
+  for (let i = 0; i < numPlayers; i++) {
+    const td = document.createElement('td');
+    td.colSpan = 2;
+    td.id = `score_${rIdx}_${i}`;
+    if (isPlayerLockedForRound(i, rIdx)) {
+      td.className = 'score-cell-locked';
+      td.textContent = '—';
+    }
+    tr2.appendChild(td);
+  }
+  body.appendChild(tr2);
+
+  // Apply show-player hand lock
+  if (round.showIdx >= 0) {
     for (let i = 0; i < numPlayers; i++) {
-      const td = document.createElement('td');
-      td.colSpan = 2;
-      td.id = `score_${rIdx}_${i}`;
-      tr2.appendChild(td);
+      if (isPlayerLockedForRound(i, rIdx)) continue;
+      const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
+      if (!handInp) continue;
+      if (i === round.showIdx) {
+        handInp.value = '0';
+        handInp.disabled = true;
+        handInp.style.background = '#fff'; handInp.style.outline = '';
+        handInp.style.color = '#222';
+        rounds[rIdx].hands[i] = '0';
+      }
     }
-    body.appendChild(tr2);
+  }
 
-    // Apply hand lock if show is already set (e.g. after rebuildRows)
-    if (round.showIdx >= 0) {
-      for (let i = 0; i < numPlayers; i++) {
-        const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
-        if (!handInp) continue;
-        if (i === round.showIdx) {
-          handInp.value = '0';
-          handInp.disabled = true;
-          handInp.style.background = '#fff'; handInp.style.outline = '';
-          handInp.style.color = '#222';
-          rounds[rIdx].hands[i] = '0';
+  updateRowColors(rIdx);
+}
+
+// ── Update functions ──────────────────────────────────
+function updateAll() {
+  for (let i = 0; i < numPlayers; i++) {
+    const ph = document.getElementById(`ph_${i}`);
+    if (ph) ph.textContent = getPlayerName(i);
+  }
+  rounds.forEach((round, rIdx) => {
+    const sel = document.getElementById(`show_${rIdx}`);
+    if (!sel) return;
+    const options = sel.querySelectorAll('option');
+    for (let i = 0; i < numPlayers; i++) {
+      const opt = options[i + 1];
+      if (opt) opt.textContent = getPlayerName(i);
+    }
+    sel.value = round.showIdx >= 0 ? round.showIdx : -1;
+  });
+  updateScores();
+}
+
+function highlightEmpty() {
+  for (let i = 0; i < numPlayers; i++) {
+    const inp = document.getElementById(`pname_${i}`);
+    if (!inp) continue;
+    inp.style.background = inp.value.trim() === '' ? '#fde0e0' : '#fff';
+  }
+  rounds.forEach((round, rIdx) => {
+    const hasAnyData = round.showIdx >= 0 || round.maals.some(v => v) || round.hands.some(v => v);
+    if (!hasAnyData) return;
+    for (let i = 0; i < numPlayers; i++) {
+      if (isPlayerLockedForRound(i, rIdx)) continue;
+      const maalInp = document.getElementById(`inp_${rIdx}_${i}_maals`);
+      const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
+      if (maalInp) maalInp.style.background = maalInp.value === '' ? '#fde0e0' : '#fff';
+      if (handInp && !handInp.disabled) handInp.style.background = handInp.value === '' ? '#fde0e0' : '#fff';
+      if (handInp && handInp.disabled) { handInp.style.background = '#fff'; handInp.style.outline = ''; }
+    }
+  });
+}
+
+function clearErrorIfValid() {
+  const errDiv = document.getElementById('errorMsg');
+  if (!errDiv) return;
+  if (rounds.length === 0) return;
+  const lastRound = rounds[rounds.length - 1];
+  if (isRoundComplete(lastRound)) {
+    errDiv.remove();
+    hasActiveError = false;
+    const rIdx = rounds.length - 1;
+    const showSel = document.getElementById(`show_${rIdx}`);
+    if (showSel) showSel.style.background = '';
+    for (let i = 0; i < numPlayers; i++) {
+      const maalInp = document.getElementById(`inp_${rIdx}_${i}_maals`);
+      const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
+      if (maalInp) maalInp.style.background = '';
+      if (handInp && !handInp.disabled) { handInp.style.background = ''; handInp.style.outline = ''; }
+      const nameInp = document.getElementById(`pname_${i}`);
+      if (nameInp) nameInp.style.background = '';
+    }
+  }
+}
+
+function updateScores() {
+  clearErrorIfValid();
+  highlightEmpty();
+  rounds.forEach((_, rIdx) => updateRowColors(rIdx));
+
+  // Lock num players once second round exists
+  const numSel = document.getElementById('numSelect');
+  if (numSel && rounds.length >= 2) {
+    numSel.disabled = true;
+    numSel.style.opacity = '0.5';
+    numSel.style.cursor = 'not-allowed';
+  }
+
+  const totals = getTotals();
+  const hasData = rounds.some(r => r.maals.some(v => v) || r.hands.some(v => v));
+  const hasError = hasActiveError;
+  const sorted = [...totals].sort((a, b) => b - a);
+  const suffixes = ['st','nd','rd'];
+  for (let i = 0; i < numPlayers; i++) {
+    const cell = document.getElementById(`ptotal_${i}`);
+    const posCell = document.getElementById(`ppos_${i}`);
+    if (!cell) continue;
+    if (hasData) {
+      const style = scoreStyle(totals[i], totals);
+      cell.textContent = totals[i];
+      cell.style.cssText = style;
+      if (posCell) {
+        if (!hasError) {
+          const rank = sorted.indexOf(totals[i]) + 1;
+          const suffix = rank <= 3 ? suffixes[rank-1] : 'th';
+          posCell.textContent = rank + suffix;
+          const colorMatch = style.match(/color:([^;]+)/);
+          posCell.style.cssText = colorMatch ? `color:${colorMatch[1]}; font-weight:700;` : '';
+        } else {
+          posCell.textContent = '';
+          posCell.style.cssText = '';
         }
       }
+    } else {
+      cell.textContent = '';
+      cell.style.cssText = '';
+      if (posCell) { posCell.textContent = ''; posCell.style.cssText = ''; }
     }
-
-    updateRowColors(rIdx);
   }
+}
 
-  // ── Update functions (no DOM rebuild) ────────────────
-
-  function updateAll() {
-    // Update player name headers
-    for (let i = 0; i < numPlayers; i++) {
-      const ph = document.getElementById(`ph_${i}`);
-      if (ph) ph.textContent = getPlayerName(i);
+function updateRowColors(rIdx) {
+  const round = rounds[rIdx];
+  const scores = calcRoundScores(round);
+  const isEmpty = round.showIdx < 0 && round.maals.every((v, i) => isPlayerLockedForRound(i, rIdx) || !v)
+                                    && round.hands.every((v, i) => isPlayerLockedForRound(i, rIdx) || !v);
+  const tr1 = document.getElementById(`row_${rIdx}`);
+  const tr2 = document.getElementById(`scorerow_${rIdx}`);
+  if (tr1) tr1.className = isEmpty ? 'row-empty' : '';
+  if (tr2) tr2.className = 'score-row' + (isEmpty ? ' row-empty' : '');
+  for (let i = 0; i < numPlayers; i++) {
+    const cell = document.getElementById(`score_${rIdx}_${i}`);
+    if (!cell) continue;
+    if (isPlayerLockedForRound(i, rIdx)) {
+      cell.className = 'score-cell-locked';
+      cell.textContent = '—';
+      cell.style.cssText = '';
+      continue;
     }
-    // Update option text only (values are indices, no need to change)
-    rounds.forEach((round, rIdx) => {
-      const sel = document.getElementById(`show_${rIdx}`);
-      if (!sel) return;
-      const options = sel.querySelectorAll('option');
-      for (let i = 0; i < numPlayers; i++) {
-        const opt = options[i + 1]; // skip blank first option
-        if (opt) opt.textContent = getPlayerName(i);
-      }
-      sel.value = round.showIdx >= 0 ? round.showIdx : -1;
-    });
-    updateScores();
+    const s = scores[i];
+    cell.textContent = s === null ? '' : s;
+    cell.style.cssText = scoreStyle(s, scores);
   }
+}
 
-  function highlightEmpty() {
-    // Player name inputs
-    for (let i = 0; i < numPlayers; i++) {
-      const inp = document.getElementById(`pname_${i}`);
-      if (!inp) continue;
-      inp.style.background = inp.value.trim() === '' ? '#fde0e0' : '#fff';
-    }
-    // Maal/Hand inputs: only highlight if the round has any data entered
-    rounds.forEach((round, rIdx) => {
-      const hasAnyData = round.showIdx >= 0 || round.maals.some(v => v) || round.hands.some(v => v);
-      if (!hasAnyData) return;
-      for (let i = 0; i < numPlayers; i++) {
-        const maalInp = document.getElementById(`inp_${rIdx}_${i}_maals`);
-        const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
-        if (maalInp) maalInp.style.background = maalInp.value === '' ? '#fde0e0' : '#fff';
-        if (handInp && !handInp.disabled) handInp.style.background = handInp.value === '' ? '#fde0e0' : '#fff';
-        if (handInp && handInp.disabled) { handInp.style.background = '#fff'; handInp.style.outline = ''; }
-      }
-    });
+// ── Game controls ─────────────────────────────────────
+function isRoundComplete(round) {
+  const rIdx = rounds.indexOf(round);
+  if (round.showIdx < 0) return false;
+  for (let i = 0; i < numPlayers; i++) {
+    if (isPlayerLockedForRound(i, rIdx)) continue;
+    if (round.maals[i] === '') return false;
+    if (round.hands[i] === '') return false;
+    if (parseFloat(round.hands[i]) > handLimit) return false;
   }
+  for (let i = 0; i < numPlayers; i++) {
+    if (!playerNames[i] || playerNames[i].trim() === '') return false;
+  }
+  return true;
+}
 
-  function clearErrorIfValid() {
-    const errDiv = document.getElementById('errorMsg');
-    if (!errDiv) return;
-    if (rounds.length === 0) return;
+function addRound() {
+  if (rounds.length > 0) {
     const lastRound = rounds[rounds.length - 1];
-    if (isRoundComplete(lastRound)) {
-      errDiv.remove();
-      hasActiveError = false;
-      // Clear red highlights on inputs
+    if (!isRoundComplete(lastRound)) {
+      const errors = [];
+      for (let i = 0; i < numPlayers; i++) {
+        if (!playerNames[i] || playerNames[i].trim() === '') {
+          errors.push(`Player ${i+1} name is missing`);
+          const inp = document.getElementById(`pname_${i}`);
+          if (inp) inp.style.background = '#fde0e0';
+        }
+      }
       const rIdx = rounds.length - 1;
       const showSel = document.getElementById(`show_${rIdx}`);
-      if (showSel) showSel.style.background = '';
+      if (lastRound.showIdx < 0) {
+        errors.push(`Round ${rIdx+1}: "Show" player not selected`);
+        if (showSel) showSel.style.background = '#fde0e0';
+      }
       for (let i = 0; i < numPlayers; i++) {
+        if (isPlayerLockedForRound(i, rIdx)) continue;
         const maalInp = document.getElementById(`inp_${rIdx}_${i}_maals`);
         const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
-        if (maalInp) maalInp.style.background = '';
-        if (handInp && !handInp.disabled) { handInp.style.background = ''; handInp.style.outline = ''; }
-        const nameInp = document.getElementById(`pname_${i}`);
-        if (nameInp) nameInp.style.background = '';
+        if (maalInp && maalInp.value === '') {
+          errors.push(`Round ${rIdx+1}: Maal missing for ${getPlayerName(i)}`);
+          maalInp.style.background = '#fde0e0';
+        }
+        if (handInp && handInp.value === '') {
+          errors.push(`Round ${rIdx+1}: Hand missing for ${getPlayerName(i)}`);
+          handInp.style.background = '#fde0e0';
+        }
+        if (handInp && parseFloat(handInp.value) > handLimit) {
+          errors.push(`Round ${rIdx+1}: Hand for ${getPlayerName(i)} cannot exceed ${handLimit}`);
+          handInp.style.background = '#fde0e0';
+          handInp.style.outline = '2px solid #c0392b';
+        }
       }
-    }
-  }
-
-  function updateScores() {
-    clearErrorIfValid();
-    highlightEmpty();
-    // Update per-round score cells
-    rounds.forEach((_, rIdx) => updateRowColors(rIdx));
-    // Update totals
-    const totals = getTotals();
-    const hasData = rounds.some(r => r.show || r.maals.some(v => v) || r.hands.some(v => v));
-    // Compute ranks
-    const hasError = hasActiveError;
-    const sorted = [...totals].sort((a, b) => b - a);
-    const suffixes = ['st','nd','rd'];
-    for (let i = 0; i < numPlayers; i++) {
-      const cell = document.getElementById(`ptotal_${i}`);
-      const posCell = document.getElementById(`ppos_${i}`);
-      if (!cell) continue;
-      if (hasData) {
-        const style = scoreStyle(totals[i], totals);
-        cell.textContent = totals[i];
-        cell.style.cssText = style;
-        if (posCell) {
-          if (!hasError) {
-            const rank = sorted.indexOf(totals[i]) + 1;
-            const suffix = rank <= 3 ? suffixes[rank-1] : 'th';
-            posCell.textContent = rank + suffix;
-            const colorMatch = style.match(/color:([^;]+)/);
-            posCell.style.cssText = colorMatch ? `color:${colorMatch[1]}; font-weight:700;` : '';
-          } else {
-            posCell.textContent = '';
-            posCell.style.cssText = '';
-          }
-        }
-      } else {
-        cell.textContent = '';
-        cell.style.cssText = '';
-        if (posCell) { posCell.textContent = ''; posCell.style.cssText = ''; }
+      let errDiv = document.getElementById('errorMsg');
+      if (!errDiv) {
+        errDiv = document.createElement('div');
+        errDiv.id = 'errorMsg';
+        errDiv.style.cssText = 'background:#fde0e0; border:1px solid #c0392b; color:#8a1010; padding:8px 12px; margin-top:10px; border-radius:2px; font-size:12px;';
+        document.querySelector('.btn-row').after(errDiv);
       }
+      errDiv.innerHTML = '<strong>Please fix the following:</strong><ul style="margin:4px 0 0 16px">' +
+        errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
+      hasActiveError = true;
+      updateScores();
+      return;
     }
   }
+  const errDiv = document.getElementById('errorMsg');
+  if (errDiv) errDiv.remove();
+  hasActiveError = false;
+  const rIdx = rounds.length;
+  const maals = Array(numPlayers).fill('');
+  const hands = Array(numPlayers).fill('');
+  rounds.push({ showIdx: -1, maals, hands });
+  appendRow(rIdx);
+  // Show "+ Add Player" button once second round is added
+  if (rounds.length === 2) buildPlayersTable();
+  updateScores();
+}
 
-  function updateRowColors(rIdx) {
-    const round = rounds[rIdx];
-    const scores = calcRoundScores(round);
-    const isEmpty = round.showIdx < 0 && round.maals.every(v => !v) && round.hands.every(v => !v);
+function resetGame() {
+  rounds = [];
+  numPlayers = 0;
+  playerNames = ['','','','','',''];
+  playerJoinedRound = [0,0,0,0,0,0];
+  hasActiveError = false;
+  handLimit = 10;
 
-    // Pink empty styling
-    const tr1 = document.getElementById(`row_${rIdx}`);
-    const tr2 = document.getElementById(`scorerow_${rIdx}`);
-    if (tr1) tr1.className = isEmpty ? 'row-empty' : '';
-    if (tr2) tr2.className = 'score-row' + (isEmpty ? ' row-empty' : '');
+  const numSel = document.getElementById('numSelect');
+  numSel.value = '';
+  numSel.disabled = false;
+  numSel.style.opacity = '';
+  numSel.style.cursor = '';
 
-    for (let i = 0; i < numPlayers; i++) {
-      const cell = document.getElementById(`score_${rIdx}_${i}`);
-      if (!cell) continue;
-      const s = scores[i];
-      cell.textContent = s === null ? '' : s;
-      cell.style.cssText = scoreStyle(s, scores);
-    }
-  }
+  const handLimitSel = document.getElementById('handLimitSelect');
+  handLimitSel.value = '10';
+  handLimitSel.disabled = false;
+  handLimitSel.style.opacity = '';
+  handLimitSel.style.cursor = '';
 
-  // ── Game controls ─────────────────────────────────────
+  const footerEl = document.getElementById('footerHandLimit');
+  if (footerEl) footerEl.textContent = 10;
+  const footerDefault = document.getElementById('footerHandLimitDefault');
+  if (footerDefault) footerDefault.textContent = 10;
+  const footerFootnote = document.getElementById('footerHandLimitFootnote');
+  if (footerFootnote) footerFootnote.textContent = 10;
 
-  function isRoundComplete(round) {
-    if (round.showIdx < 0) return false;
-    for (let i = 0; i < numPlayers; i++) {
-      if (round.maals[i] === '') return false;
-      if (round.hands[i] === '') return false;
-      if (parseFloat(round.hands[i]) > 10) return false;
-    }
-    // Also check all player names filled
-    for (let i = 0; i < numPlayers; i++) {
-      if (!playerNames[i] || playerNames[i].trim() === '') return false;
-    }
-    return true;
-  }
+  const errDiv = document.getElementById('errorMsg');
+  if (errDiv) errDiv.remove();
 
-  function addRound() {
-    if (rounds.length > 0) {
-      const lastRound = rounds[rounds.length - 1];
-      if (!isRoundComplete(lastRound)) {
-        const errors = [];
-        // Check player names
-        for (let i = 0; i < numPlayers; i++) {
-          if (!playerNames[i] || playerNames[i].trim() === '') {
-            errors.push(`Player ${i+1} name is missing`);
-            const inp = document.getElementById(`pname_${i}`);
-            if (inp) inp.style.background = '#fde0e0';
-          }
-        }
-        const rIdx = rounds.length - 1;
-        // Check show
-        const showSel = document.getElementById(`show_${rIdx}`);
-        if (lastRound.showIdx < 0) {
-          errors.push(`Round ${rIdx+1}: "Show" player not selected`);
-          if (showSel) showSel.style.background = '#fde0e0';
-        }
-        // Check maal/hand
-        for (let i = 0; i < numPlayers; i++) {
-          const maalInp = document.getElementById(`inp_${rIdx}_${i}_maals`);
-          const handInp = document.getElementById(`inp_${rIdx}_${i}_hands`);
-          if (maalInp && maalInp.value === '') {
-            errors.push(`Round ${rIdx+1}: Maal missing for ${getPlayerName(i)}`);
-            maalInp.style.background = '#fde0e0';
-          }
-          if (handInp && handInp.value === '') {
-            errors.push(`Round ${rIdx+1}: Hand missing for ${getPlayerName(i)}`);
-            handInp.style.background = '#fde0e0';
-          }
-          if (handInp && parseFloat(handInp.value) > 10) {
-            errors.push(`Round ${rIdx+1}: Hand for ${getPlayerName(i)} cannot exceed 10`);
-            handInp.style.background = '#fde0e0';
-            handInp.style.outline = '2px solid #c0392b';
-          }
-        }
-        // Show error message
-        let errDiv = document.getElementById('errorMsg');
-        if (!errDiv) {
-          errDiv = document.createElement('div');
-          errDiv.id = 'errorMsg';
-          errDiv.style.cssText = 'background:#fde0e0; border:1px solid #c0392b; color:#8a1010; padding:8px 12px; margin-top:10px; border-radius:2px; font-size:12px;';
-          document.querySelector('.btn-row').after(errDiv);
-        }
-        errDiv.innerHTML = '<strong>Please fix the following:</strong><ul style="margin:4px 0 0 16px">' +
-          errors.map(e => `<li>${e}</li>`).join('') + '</ul>';
-        hasActiveError = true;
-        updateScores();
-        return;
-      }
-    }
-    // Clear any error message
-    const errDiv = document.getElementById('errorMsg');
-    if (errDiv) errDiv.remove();
-    hasActiveError = false;
-    const rIdx = rounds.length;
-    rounds.push({ showIdx: -1, maals: Array(numPlayers).fill(''), hands: Array(numPlayers).fill('') });
-    appendRow(rIdx);
-    updateScores();
-  }
-
-  function resetGame() {
-    rounds = [];
-    playerNames = ['','','','','',''];
-    hasActiveError = false;
-    // Reset number of players selector
-    document.getElementById('numSelect').value = '';
-    // Clear error message
-    const errDiv = document.getElementById('errorMsg');
-    if (errDiv) errDiv.remove();
-    // Clear player and rounds tables
-    document.getElementById('playersTable').innerHTML = '';
-    const roundsTable = document.getElementById('roundsTable');
-    if (roundsTable) roundsTable.innerHTML = '';
-  }
-
-  // Init: wait for player count selection
-  // buildTable and addRound called on first selection
+  document.getElementById('playersTable').innerHTML = '';
+  const roundsTable = document.getElementById('roundsTable');
+  if (roundsTable) roundsTable.innerHTML = '';
+}
 </script>
 
 <div class="footer">
   <h2>♠ How to Play Marriage</h2>
   <p>Marriage is a 21-card Rummy game popular in Nepal, India, and Bhutan, played with 3 standard decks (52 + 2/3 Jokers each) and 2-6 players.</p>
-
   <div class="rules-grid">
     <div>
       <h3>Objective</h3>
       <p>Be the first to arrange your 21 cards into valid sets by completing the Opening and then the Closing contract.</p>
-
       <h3>Setup</h3>
       <ul>
         <li>Each player is dealt 21 cards</li>
@@ -711,7 +804,6 @@
         <li>The card one rank above Tiplu (same suit) is the <strong>Poplu</strong>; one rank below is the <strong>Jhiplu</strong></li>
         <li>Cards of the same rank in all other suits also act as wild cards</li>
       </ul>
-
       <h3>Valid Sets</h3>
       <ul>
         <li><span class="tag">Pure Sequence</span> 3+ consecutive cards of the same suit (e.g. 4<span style="color:#c0392b">♥</span> 5<span style="color:#c0392b">♥</span> 6<span style="color:#c0392b">♥</span>)</li>
@@ -721,14 +813,12 @@
         <li><span class="tag" style="background:#fde0e0; color:#9C0006;">Trial</span> <span style="text-decoration:line-through;">Three cards of the same rank (e.g. three 7s)</span> *</li>
       </ul>
       <p style="margin-top:8px; color:#999; font-size:11px;">* Not valid</p>
-
       <h3>Dublee Rules †</h3>
       <ul>
         <li>7 Dublees: free hand and you may see the Joker</li>
         <li>9 Dublees: Show</li>
         <li>You must commit to one route: once you see the Joker via sequences you cannot play Dublees, and vice versa</li>
       </ul>
-
       <h3>Gameplay</h3>
       <ul>
         <li>On your turn, draw one card from the stock pile or the top of the discard pile</li>
@@ -744,7 +834,6 @@
         <li>Once the closing contract is met, declare <strong>Show</strong>, lay down all cards and discard your last card</li>
         <li>Other players tally their Maal and Hand based on remaining cards</li>
       </ul>
-
       <h3>Scoring</h3>
       <ul>
         <li><strong>Maal</strong>: points earned from special cards and combinations</li>
@@ -752,7 +841,6 @@
         <li>Show player: <em>own Maal × number of players − Total Maal + Total Hand</em></li>
         <li>All others: <em>own Maal × number of players − Total Maal − own Hand</em></li>
       </ul>
-
       <h3>Maal Values</h3>
       <ul>
         <li><strong>Tiplu</strong>: 4 Maal; two give 10 Maal</li>
@@ -761,16 +849,16 @@
         <li><strong>Tunnel</strong>: 2 Maal; two give 5 Maal, three give 10 Maal</li>
         <li><strong>Joker card</strong>: 2 Maal; two give 5 Maal, three give 10 Maal</li>
       </ul>
-
       <h3>Hand Values</h3>
       <ul>
-        <li>If you have not completed the Opening Contract: Hand = 10 ‡</li>
+        <li>If you have not completed the Opening Contract: Hand = <span id="footerHandLimitDefault">10</span> ‡</li>
         <li>Otherwise, count your unmatched cards: Ace, King, Queen and Jack are worth 10; all other cards are worth their face value</li>
-        <li>Divide the total by 10 and round, your Hand cannot exceed 10</li>
+        <li>Divide the total by 10 and round, your Hand cannot exceed <span id="footerHandLimit">10</span></li>
       </ul>
-      <p style="margin-top:8px; color:#999; font-size:11px;">‡ If you have pure sequences longer than 3 cards, you may exclude those cards along with any wild cards and count the rest manually, worth doing if it brings your Hand below 10</p>
+      <p style="margin-top:8px; color:#999; font-size:11px;">‡ If you have pure sequences longer than 3 cards, you may exclude those cards along with any wild cards and count the rest manually, worth doing if it brings your Hand below <span id="footerHandLimitFootnote">10</span></p>
     </div>
   </div>
 </div>
+
 </body>
 </html>
